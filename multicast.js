@@ -30,6 +30,17 @@
     
     }
     
+    function getter() {
+        return this;
+    }
+    
+    function setter( fn ) {
+        if (fn === this) {
+            return;
+        }
+        this.observe(new Function("return " + fn.replace(/^undefined/, ""))());    
+    }
+    
     
     function toString() {
         return "undefined";
@@ -48,15 +59,8 @@
         self.update = update;
         self.toString = toString;
 
-        self.context.__defineGetter__(name, function() {
-            return self;
-        });
-        self.context.__defineSetter__(name, function(fn) {
-            if (fn === self) {
-                return;
-            }
-            self.observe(new Function("return " + fn.replace(/^undefined/, ""))());
-        });
+        self.context.__defineGetter__(name, getter.bind(self) );
+        self.context.__defineSetter__(name, setter.bind(self) );
 
         return self;   
     }
@@ -72,9 +76,6 @@
 
 function Widget() {
     action(this, "onClose");
-    this.onClose += this.method1;
-    this.onClose += this.method2;
-    this.onClose("argument");
 }
 
 Widget.prototype = {
@@ -92,3 +93,11 @@ Widget.prototype = {
     constructor: Widget
 };
 var a = new Widget();
+
+var a = new Widget();
+
+a.onClose += function() {
+  console.log( this, arguments);  
+};
+
+a.onClose("hai");
