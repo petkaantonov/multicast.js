@@ -41,7 +41,25 @@
         this.observe(new Function("return " + fn.replace(/^undefined/, ""))());    
     }
     
+    function defineGetterAndSetter( obj, name, getter, setter ) {
     
+        if( Object.defineProperty ) {
+            Object.defineProperty( obj, name, {
+                set: setter,
+                get: getter
+            });
+        }
+        else if( obj.__defineSetter__ ) {
+            obj.__defineGetter__( name, getter );
+            obj.__defineSetter__( name, setter );
+        }
+        else {
+        
+        }
+    
+    }
+    
+
     function toString() {
         return "undefined";
     }
@@ -59,8 +77,7 @@
         self.update = update;
         self.toString = toString;
 
-        self.context.__defineGetter__(name, getter.bind(self) );
-        self.context.__defineSetter__(name, setter.bind(self) );
+        defineGetterAndSetter( context, name, getter.bind(self), setter.bind(self) );
 
         return self;   
     }
@@ -79,6 +96,8 @@ function Widget() {
 }
 
 Widget.prototype = {
+
+    delegates: ["onClose"],
 
     method1: (function() {
         return function(a) {
