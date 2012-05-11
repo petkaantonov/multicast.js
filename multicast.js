@@ -1,5 +1,7 @@
 (function( window, undefined ) {
 
+    var rundefined = /^[\D\d]*?undefined/;
+
     window.action = action;
     window.actions = actions;
 
@@ -38,7 +40,8 @@
         if (fn === this) {
             return;
         }
-        this.observe(new Function("return " + fn.replace(/^undefined/, ""))());    
+
+        this.observe(new Function("return " + fn.replace(rundefined, ""))());    
     }
     
     function defineGetterAndSetter( obj, name, getter, setter ) {
@@ -59,9 +62,8 @@
     
     }
     
-
     function toString() {
-        return "undefined";
+        return "";
     }
 
     function action( context, name ) {
