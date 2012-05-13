@@ -1,6 +1,6 @@
 ;(function(global) {
+"use strict";
 
-    
     function observe(fn) {
         this.fns.push(fn);
     }
@@ -43,10 +43,11 @@
         return self;
     }
     
-    if (typeof module !== "undefined" && module.exports) {
-        module.exports = observable
-    } else if (global) {
-        global.Observable = observable
+    if( typeof module !== "undefined" && module.exports ) {
+        module.exports = observable;
+    }
+    else if ( global ) {
+        global.Observable = observable;
     }
         
 })(this);
