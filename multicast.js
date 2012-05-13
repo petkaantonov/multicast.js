@@ -1,22 +1,84 @@
 (function( window, undefined ) {
 
-    var rundefined = /^[\D\d]*?undefined/;
+    var rundefined = /^[\D\d]*?undefined/,
+        rmatchname = /function\s*([a-zA-Z$_][a-zA-Z0-9$_]*)/;
 
-    window.action = action;
-    window.actions = actions;
+    window.delegate = action;
+    
+    var getFnName = function() {
+    
+        function nameGetter(fn) {
+            return fn.name || "";
+        }
+        
+        if( nameGetter.name && nameGetter.name === "nameGetter" ) {
+            return nameGetter;
+        }
+        
+        return function(fn) {
+            return (((fn+"").match( rmatchname ) || [] )[1] || "");
+        }
+    
+    }();
+    
+    var isArray = function() {
+        var toString = {}.toString;
+        if( Array.isArray ) {
+            return Array.isArray;
+        }
+        else {
+            return function( obj ) {
+                return toString.call( obj, obj ) === "[object Array]";
+            };
+        }
+    }();
+    
+    var defineGetterAndSetter = function() {
+    
+        if( Object.defineProperty ) {
+            return function(obj, name, getter, setter) {
+                Object.defineProperty( obj, name, {
+                    set: setter,
+                    get: getter
+                });
+            };
+        }
+        
+        else if( obj.__defineSetter__ ) {
+            return function(obj, name, getter, setter) {
+                obj.__defineGetter__( name, getter );
+                obj.__defineSetter__( name, setter );
+            };
+        }
+        
+        else {
+            return function(){};
+        }
+            
+    }();
+    
 
     function observe(fn) {
         this.listeners.push(fn);
     }
     
     function unobserve(fn) {
-        var index;
-
-        index = this.listeners.indexOf(fn);
-
-        if (index > -1) {
-            this.listeners.splice(index, 1);
+        var index, name = fn.call ? getFnName(fn) : fn,
+            listeners = this.listeners,
+            listener,
+            i, len = listeners.length;
+            
+        if( !fn ) {
+            return null;
         }
+
+        for( i = 0; i < len; ++i ) {
+            listener = listeners[i];
+            if( listener === fn || ( name && getFnName( listener ) === name ) ) {
+                return listeners.splice( i, 1 )[0];
+            }
+        }
+        return null;
 
     }
     
@@ -44,29 +106,16 @@
         this.observe(new Function("return " + fn.replace(rundefined, ""))());    
     }
     
-    function defineGetterAndSetter( obj, name, getter, setter ) {
-    
-        if( Object.defineProperty ) {
-            Object.defineProperty( obj, name, {
-                set: setter,
-                get: getter
-            });
-        }
-        else if( obj.__defineSetter__ ) {
-            obj.__defineGetter__( name, getter );
-            obj.__defineSetter__( name, setter );
-        }
-        else {
-        
-        }
-    
-    }
+
     
     function toString() {
         return "";
     }
 
     function action( context, name ) {
+        if( isArray( name ) ) {
+            return actions( context, name );
+        }
         var self = function() {
             self.update.apply( self, arguments );
         };
@@ -94,12 +143,11 @@
 
 
 function Widget() {
-    action(this, "onClose");
+    delegate(this, "onClose");
 }
 
 Widget.prototype = {
 
-    delegates: ["onClose"],
 
     method1: (function() {
         return function(a) {
@@ -122,3 +170,5 @@ a.onClose += function() {
 };
 
 a.onClose("hai");
+
+a.onClose += function named(){}
