@@ -1,5 +1,5 @@
-var Observable = (function() {
-    return observable;
+;(function(global) {
+
     
     function observe(fn) {
         this.fns.push(fn);
@@ -14,18 +14,21 @@ var Observable = (function() {
     
     function update() {
             var fns = this.fns,
-                len = fns.length,
                 i;
     
             for (i = 0;
                 fns[i] && fns[i].apply(this.ctx, arguments) !== false;
-                ++i);
+                ++i){}
     
+    }
+    
+    function toString() {
+        return "Observable";
     }
     
     function observable( ctx ) {
         function self ( fn ) {
-            if( fn && fn.call ) {
+            if( fn && fn.call && arguments.length === 1 ) {
                 observe.call( self, fn);
                 return self;
             }
@@ -34,9 +37,16 @@ var Observable = (function() {
         }
 
         self.fns = [];
+        self.toString = toString;
         self.ctx = ctx;
         self.remove = unobserve;
         return self;
     }
+    
+    if (typeof module !== "undefined" && module.exports) {
+        module.exports = observable
+    } else if (global) {
+        global.Observable = observable
+    }
         
-})();
+})(this);
