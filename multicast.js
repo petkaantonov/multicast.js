@@ -13,12 +13,12 @@
     }
     
     function update() {
-            var fns = this.fns,
-                i;
-    
-            for (i = 0;
-                fns[i] && fns[i].apply(this.ctx, arguments) !== false;
-                ++i){}
+        var fns = this.fns,
+            i;
+
+        for (i = 0;
+            fns[i] && fns[i].apply(this.ctx, arguments) !== false;
+            ++i){}
     
     }
     
@@ -28,7 +28,7 @@
     
     function observable( ctx ) {
         function self ( fn ) {
-            if( fn && fn.call && arguments.length === 1 ) {
+            if( fn && fn.call === toString.call && arguments.length === 1 ) {
                 observe.call( self, fn);
                 return self;
             }
